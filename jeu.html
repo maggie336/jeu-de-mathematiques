@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>Jeu de mathématiques</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800&display=swap');
+
+    :root {
+      color-scheme: light dark;
+      --sky: #dff5ff;
+      --sky-deep: #b8e4f5;
+      --paper: #fffdf7;
+      --ink: #17324d;
+      --muted: #516a80;
+      --teal: #087f79;
+      --teal-dark: #05655f;
+      --sun: #ffc83d;
+      --coral: #ed695f;
+      --coral-dark: #b93e38;
+      --blue: #2f70c8;
+      --green: #2a8c58;
+      --line: #b7d5df;
+      --soft: #edf8fb;
+      --shadow: 0 18px 50px rgba(20, 68, 91, .16);
+      --answer-shadow: 0 6px 0 #bad6df;
+      --petal-pink: #f48aa0;
+      --petal-peach: #ffad74;
+      --leaf: #4c9d67;
+      --leaf-dark: #23724a;
+      --flower-center: #ffd45c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --sky: #102b3a;
+        --sky-deep: #173f50;
+        --paper: #183847;
+        --ink: #f5fbff;
+        --muted: #c4d9e4;
+        --teal: #52cfc4;
+        --teal-dark: #8ce8df;
+        --sun: #ffd365;
+        --coral: #ff8b82;
+        --coral-dark: #ffc0bb;
+        --blue: #8fc1ff;
+        --green: #75d59f;
+        --line: #416676;
+        --soft: #214654;
+        --shadow: 0 18px 50px rgba(0, 0, 0, .3);
+        --answer-shadow: 0 6px 0 #315766;
+        --petal-pink: #ff9db1;
+        --petal-peach: #ffc08f;
+        --leaf: #71c58b;
+        --leaf-dark: #4da86c;
+        --flower-center: #ffe07b;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--sky); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--ink);
+      font-family: "Nunito", sans-serif;
+      background:
+        radial-gradient(circle at 14% 7%, rgba(255,255,255,.78) 0 3px, transparent 4px),
+        radial-gradient(circle at 88% 18%, rgba(255,200,61,.62) 0 4px, transparent 5px),
+        radial-gradient(circle at 7% 77%, color-mix(in srgb, var(--petal-pink) 28%, transparent) 0 5px, transparent 6px),
+        radial-gradient(circle at 94% 66%, color-mix(in srgb, var(--leaf) 24%, transparent) 0 6px, transparent 7px),
+        linear-gradient(160deg, var(--sky) 0%, var(--sky-deep) 100%);
+      padding: clamp(14px, 3vw, 32px);
+      overflow-x: hidden;
+    }
+
+    button { font: inherit; }
+    button:focus-visible { outline: 4px solid var(--sun); outline-offset: 3px; }
+
+    .garden-stage {
+      position: relative;
+      width: min(100%, 1090px);
+      margin: 0 auto;
+      isolation: isolate;
+    }
+    .flower-spray {
+      position: absolute;
+      top: 50%;
+      width: 150px;
+      height: min(72vh, 550px);
+      transform: translateY(-50%);
+      z-index: 0;
+      overflow: visible;
+      pointer-events: none;
+      filter: drop-shadow(0 7px 8px rgba(37, 104, 72, .13));
+    }
+    .flower-spray.left { left: -2px; }
+    .flower-spray.right { right: -2px; transform: translateY(-50%) scaleX(-1); }
+    .flower-spray .stem { fill: none; stroke: var(--leaf-dark); stroke-width: 5; stroke-linecap: round; }
+    .flower-spray .leaf { fill: var(--leaf); stroke: var(--leaf-dark); stroke-width: 2; }
+    .flower-spray .petal-pink { fill: var(--petal-pink); }
+    .flower-spray .petal-peach { fill: var(--petal-peach); }
+    .flower-spray .petal-paper { fill: var(--paper); stroke: var(--line); stroke-width: 1.5; }
+    .flower-spray .flower-center { fill: var(--flower-center); stroke: color-mix(in srgb, var(--flower-center) 55%, #9a6710); stroke-width: 2; }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 920px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 210px;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .game-card {
+      min-width: 0;
+      background: var(--paper);
+      border: 2px solid color-mix(in srgb, var(--leaf) 36%, var(--line));
+      border-radius: 28px 28px 22px 22px;
+      box-shadow: var(--shadow), 0 0 0 6px color-mix(in srgb, var(--paper) 42%, transparent);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 20px;
+      background:
+        radial-gradient(circle at 4% 50%, color-mix(in srgb, var(--petal-pink) 36%, transparent) 0 4px, transparent 5px),
+        linear-gradient(90deg, color-mix(in srgb, var(--soft) 86%, var(--leaf)), var(--soft));
+      border-bottom: 2px solid color-mix(in srgb, var(--leaf) 34%, var(--line));
+    }
+
+    .mission { min-width: 0; flex: 1; }
+    .mission-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 7px;
+    }
+    .mission strong {
+      font-family: "Baloo 2", sans-serif;
+      font-size: 1.08rem;
+      line-height: 1;
+    }
+    .mission span { color: var(--muted); font-size: .9rem; font-weight: 800; }
+    .progress {
+      height: 12px;
+      background: color-mix(in srgb, var(--line) 45%, transparent);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--teal), var(--green));
+      border-radius: inherit;
+      transition: width .45s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .restart {
+      flex: 0 0 auto;
+      min-height: 44px;
+      padding: 9px 14px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+      color: var(--ink);
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .restart:hover { border-color: var(--teal); }
+
+    .play {
+      padding: clamp(24px, 5vw, 54px) clamp(18px, 6vw, 62px) 32px;
+      text-align: center;
+    }
+
+    .mode-label { color: var(--muted); font-weight: 800; margin: 0 0 10px; }
+    .mode-switcher {
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px;
+      background: var(--soft);
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      margin-bottom: clamp(24px, 4vw, 42px);
+    }
+    .mode-button {
+      min-width: 72px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .mode-button[aria-pressed="true"] {
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 3px 0 var(--teal-dark);
+    }
+    @media (prefers-color-scheme: dark) {
+      .mode-button[aria-pressed="true"] { color: #092d2b; }
+    }
+
+    .prompt {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .equation {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(3.6rem, 12vw, 6.7rem);
+      letter-spacing: .01em;
+      line-height: 1;
+      margin: 6px 0 24px;
+      color: var(--ink);
+    }
+    .operator { color: var(--coral); display: inline-block; min-width: .8em; }
+    .equals { color: var(--teal); }
+
+    .answers {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+    .answer {
+      min-height: 84px;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      color: var(--ink);
+      background: var(--soft);
+      box-shadow: var(--answer-shadow);
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.85rem, 5vw, 2.55rem);
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      touch-action: manipulation;
+    }
+    .answer:hover { border-color: var(--teal); background: color-mix(in srgb, var(--soft) 62%, var(--sun)); }
+    .answer:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--line); }
+    .answer.correct {
+      border-color: var(--green);
+      background: color-mix(in srgb, var(--paper) 55%, var(--green));
+      color: var(--ink);
+      box-shadow: 0 6px 0 color-mix(in srgb, var(--green) 70%, #174b2f);
+    }
+    .answer.wrong {
+      border-color: var(--coral);
+      background: color-mix(in srgb, var(--paper) 72%, var(--coral));
+      animation: shake .3s ease;
+      box-shadow: 0 6px 0 color-mix(in srgb, var(--coral) 65%, #91342f);
+    }
+    .answer:disabled { cursor: default; }
+
+    .feedback {
+      min-height: 34px;
+      margin: 22px 0 2px;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--teal-dark);
+    }
+    .feedback.try { color: var(--coral-dark); }
+
+    .clue-wrap { min-height: 50px; display: grid; place-items: center; }
+    .clue-button {
+      border: 0;
+      background: transparent;
+      color: var(--blue);
+      font-weight: 900;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      min-height: 44px;
+      padding: 8px 12px;
+    }
+    .clue {
+      width: 100%;
+      max-width: 560px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--soft);
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.45;
+    }
+    .strategy-step {
+      display: block;
+      margin-top: 7px;
+      color: var(--ink);
+      font-family: "Baloo 2", sans-serif;
+      font-size: 1.15rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .side {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mascot-card, .score-card {
+      background: var(--paper);
+      border: 2px solid color-mix(in srgb, var(--leaf) 32%, var(--line));
+      box-shadow: var(--shadow), 0 0 0 5px color-mix(in srgb, var(--paper) 38%, transparent);
+    }
+    .mascot-card {
+      border-radius: 26px 26px 18px 18px;
+      padding: 16px 14px 18px;
+      text-align: center;
+      flex: 1;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .mascot {
+      width: 150px;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto 6px;
+      overflow: visible;
+    }
+    .mascot-card p {
+      margin: 0;
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+    .score-card {
+      border-radius: 18px;
+      padding: 18px 16px;
+      text-align: center;
+    }
+    .score-card span { display: block; color: var(--muted); font-weight: 800; font-size: .9rem; }
+    .score-value {
+      margin-top: 4px;
+      color: var(--teal-dark);
+      font-family: "Baloo 2", sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .finish {
+      display: none;
+      padding: clamp(34px, 7vw, 70px) 24px;
+      text-align: center;
+    }
+    .finish.visible { display: block; }
+    .play.hidden { display: none; }
+    .trophy { width: 155px; height: auto; margin-bottom: 6px; }
+    .finish h2 {
+      margin: 0 0 8px;
+      font-family: "Baloo 2", sans-serif;
+      font-size: clamp(2.2rem, 8vw, 3.6rem);
+      line-height: 1;
+    }
+    .finish p { color: var(--muted); font-size: 1.1rem; font-weight: 700; margin: 0 0 22px; }
+    .play-again {
+      min-height: 54px;
+      padding: 12px 22px;
+      border: 0;
+      border-radius: 15px;
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 6px 0 var(--teal-dark);
+      font-weight: 900;
+      cursor: pointer;
+    }
+    @media (prefers-color-scheme: dark) { .play-again { color: #082c2a; } }
+    .play-again:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--teal-dark); }
+
+    .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 10; }
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 18px;
+      border-radius: 3px;
+      animation: fall 1.7s ease-in forwards;
+    }
+
+    @keyframes shake { 25% { transform: translateX(-5px); } 55% { transform: translateX(5px); } 80% { transform: translateX(-2px); } }
+    @keyframes fall { to { transform: translate3d(var(--drift), 105vh, 0) rotate(650deg); } }
+    @keyframes bob { 50% { transform: translateY(-5px) rotate(1deg); } }
+    .mascot { animation: bob 3s ease-in-out infinite; transform-origin: center; }
+
+    @media (max-width: 720px) {
+      body { padding: 10px; }
+      .flower-spray { width: 86px; height: 440px; opacity: .9; }
+      .flower-spray.left { left: -43px; }
+      .flower-spray.right { right: -43px; }
+      .shell { grid-template-columns: 1fr; }
+      .side { display: grid; grid-template-columns: 1fr 1fr; order: -1; gap: 10px; }
+      .mascot-card { min-height: 0; border-radius: 18px; padding: 10px 12px; flex-direction: row; align-items: center; text-align: left; }
+      .mascot { width: 70px; margin: 0 8px 0 0; flex: 0 0 auto; }
+      .score-card { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; }
+      .score-value { margin: 0; }
+      .game-card { border-radius: 22px 22px 17px 17px; }
+      .topbar { padding: 12px 14px; }
+      .restart { width: 46px; padding: 0; font-size: 0; }
+      .restart::after { content: "↻"; font-size: 1.65rem; line-height: 1; }
+      .play { padding: 22px 14px 24px; }
+      .mode-switcher { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 24px; }
+      .mode-button { min-width: 0; padding-inline: 5px; }
+      .equation { margin-bottom: 20px; }
+      .answers { grid-template-columns: repeat(2, 1fr); gap: 11px; }
+      .answer { min-height: 68px; border-radius: 15px; }
+    }
+
+    @media (max-width: 390px) {
+      .side { grid-template-columns: 1fr 116px; }
+      .mascot-card p { font-size: .89rem; }
+      .mascot { width: 60px; }
+      .score-card { flex-direction: column; gap: 0; }
+      .mode-button { font-size: .88rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="garden-stage">
+    <svg class="flower-spray left" viewBox="0 0 150 520" aria-hidden="true" focusable="false">
+      <path class="stem" d="M126 512C117 422 97 357 88 286S82 145 44 35"/>
+      <path class="stem" d="M104 385c-30-16-47-39-58-70M89 278c25-25 35-51 37-78M72 182c-21-14-34-31-42-53"/>
+      <path class="leaf" d="M105 406c-25-3-40-17-44-39 23 1 40 14 44 39Z"/>
+      <path class="leaf" d="M96 332c20-18 40-21 58-9-15 20-34 24-58 9Z"/>
+      <path class="leaf" d="M85 267c-23-5-36-18-38-38 21 2 35 15 38 38Z"/>
+      <path class="leaf" d="M76 207c16-20 34-27 54-19-10 21-29 29-54 19Z"/>
+      <path class="leaf" d="M57 130c-21-4-35-16-40-35 21 0 36 12 40 35Z"/>
+      <g transform="translate(47 40)">
+        <ellipse class="petal-pink" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-pink" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-pink" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-pink" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-pink" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+      <g transform="translate(30 127) scale(.82)">
+        <ellipse class="petal-paper" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-paper" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-paper" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-paper" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-paper" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+      <g transform="translate(126 198) scale(.72)">
+        <ellipse class="petal-peach" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-peach" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-peach" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-peach" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-peach" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+      <g transform="translate(46 313) scale(.66)">
+        <ellipse class="petal-pink" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-pink" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-pink" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-pink" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-pink" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+    </svg>
+
+    <svg class="flower-spray right" viewBox="0 0 150 520" aria-hidden="true" focusable="false">
+      <path class="stem" d="M126 512C117 422 97 357 88 286S82 145 44 35"/>
+      <path class="stem" d="M104 385c-30-16-47-39-58-70M89 278c25-25 35-51 37-78M72 182c-21-14-34-31-42-53"/>
+      <path class="leaf" d="M105 406c-25-3-40-17-44-39 23 1 40 14 44 39Z"/>
+      <path class="leaf" d="M96 332c20-18 40-21 58-9-15 20-34 24-58 9Z"/>
+      <path class="leaf" d="M85 267c-23-5-36-18-38-38 21 2 35 15 38 38Z"/>
+      <path class="leaf" d="M76 207c16-20 34-27 54-19-10 21-29 29-54 19Z"/>
+      <path class="leaf" d="M57 130c-21-4-35-16-40-35 21 0 36 12 40 35Z"/>
+      <g transform="translate(47 40)">
+        <ellipse class="petal-pink" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-pink" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-pink" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-pink" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-pink" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+      <g transform="translate(30 127) scale(.82)">
+        <ellipse class="petal-paper" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-paper" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-paper" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-paper" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-paper" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+      <g transform="translate(126 198) scale(.72)">
+        <ellipse class="petal-peach" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-peach" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-peach" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-peach" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-peach" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+      <g transform="translate(46 313) scale(.66)">
+        <ellipse class="petal-pink" cx="0" cy="-18" rx="11" ry="18"/><ellipse class="petal-pink" cx="17" cy="-5" rx="11" ry="18" transform="rotate(72 17 -5)"/><ellipse class="petal-pink" cx="11" cy="15" rx="11" ry="18" transform="rotate(144 11 15)"/><ellipse class="petal-pink" cx="-11" cy="15" rx="11" ry="18" transform="rotate(216 -11 15)"/><ellipse class="petal-pink" cx="-17" cy="-5" rx="11" ry="18" transform="rotate(288 -17 -5)"/><circle class="flower-center" r="9"/>
+      </g>
+    </svg>
+
+    <div class="shell">
+    <main class="game-card" aria-live="polite">
+      <header class="topbar">
+        <div class="mission">
+          <div class="mission-row">
+            <strong>Défi 7–9 ans · 10 calculs</strong>
+            <span id="progressText">0 / 10</span>
+          </div>
+          <div class="progress" role="progressbar" aria-label="Progression de la mission" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <button class="restart" id="restart" type="button" aria-label="Recommencer la mission">Recommencer</button>
+      </header>
+
+      <section class="play" id="playArea" aria-labelledby="instruction">
+        <p class="mode-label">Choisis ton défi</p>
+        <div class="mode-switcher" role="group" aria-label="Type de calcul">
+          <button class="mode-button" type="button" data-mode="plus" aria-pressed="false">Additions</button>
+          <button class="mode-button" type="button" data-mode="minus" aria-pressed="false">Soustractions</button>
+          <button class="mode-button" type="button" data-mode="mixed" aria-pressed="true">Mélange</button>
+        </div>
+
+        <p class="prompt" id="instruction">Trouve la bonne réponse</p>
+        <div class="equation" aria-describedby="instruction">
+          <span id="first">4</span>
+          <span class="operator" id="operator">+</span>
+          <span id="second">3</span>
+          <span class="equals">= ?</span>
+        </div>
+
+        <div class="answers" id="answers" aria-label="Réponses possibles"></div>
+        <p class="feedback" id="feedback" aria-live="assertive"></p>
+        <div class="clue-wrap" id="clueWrap">
+          <button class="clue-button" id="clueButton" type="button">Voir un indice</button>
+        </div>
+      </section>
+
+      <section class="finish" id="finish" aria-labelledby="finishTitle">
+        <svg class="trophy" viewBox="0 0 180 160" role="img" aria-label="Coupe dorée avec une étoile">
+          <path d="M46 24h88v24c0 36-18 58-44 58S46 84 46 48Z" fill="#ffc83d" stroke="#9a6710" stroke-width="5"/>
+          <path d="M48 38H23v15c0 23 14 35 33 35M132 38h25v15c0 23-14 35-33 35" fill="none" stroke="#ed9e24" stroke-width="8" stroke-linecap="round"/>
+          <path d="M90 106v20M61 143h58M72 126h36v17H72z" fill="#ffc83d" stroke="#9a6710" stroke-width="5" stroke-linecap="round"/>
+          <path d="m90 43 6 12 14 2-10 10 2 14-12-7-12 7 2-14-10-10 14-2Z" fill="#fffdf7" stroke="#9a6710" stroke-width="3"/>
+        </svg>
+        <h2 id="finishTitle">Mission réussie !</h2>
+        <p id="finishText">Tu as gagné 10 étoiles. Bravo !</p>
+        <button class="play-again" id="playAgain" type="button">Faire une autre mission</button>
+      </section>
+    </main>
+
+    <aside class="side" aria-label="Compagnon et score">
+      <div class="mascot-card">
+        <svg class="mascot" viewBox="0 0 180 180" role="img" aria-label="Petit robot amical qui encourage">
+          <path d="M90 26v-12" fill="none" stroke="#17324d" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="90" cy="11" r="7" fill="#ffc83d" stroke="#9a6710" stroke-width="3"/>
+          <path d="M38 72c0-27 20-46 52-46s52 19 52 46v46c0 25-20 40-52 40s-52-15-52-40Z" fill="#dff5ff" stroke="#17324d" stroke-width="5"/>
+          <rect x="49" y="48" width="82" height="66" rx="25" fill="#fffdf7" stroke="#17324d" stroke-width="4"/>
+          <circle cx="74" cy="79" r="8" fill="#087f79"/>
+          <circle cx="106" cy="79" r="8" fill="#087f79"/>
+          <path d="M72 95c9 10 27 10 36 0" fill="none" stroke="#ed695f" stroke-width="5" stroke-linecap="round"/>
+          <path d="M38 91 22 80M142 91l16-11" fill="none" stroke="#17324d" stroke-width="6" stroke-linecap="round"/>
+          <path d="M62 158v12M118 158v12" fill="none" stroke="#17324d" stroke-width="7" stroke-linecap="round"/>
+          <path d="m90 124 5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2Z" fill="#ffc83d" stroke="#9a6710" stroke-width="2"/>
+        </svg>
+        <p id="coachText">À toi de jouer !</p>
+      </div>
+      <div class="score-card">
+        <span>Étoiles gagnées</span>
+        <div class="score-value"><span aria-hidden="true">★</span> <b id="stars">0</b></div>
+      </div>
+    </aside>
+    </div>
+  </div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <script>
+    (function () {
+      var state = { mode: "mixed", solved: 0, stars: 0, answer: 0, first: 0, second: 0, op: "+", locked: false, mistakes: 0 };
+      var total = 10;
+      var praise = ["Super !", "Bravo !", "Bien joué !", "Excellent !", "Tu assures !"];
+      var firstEl = document.getElementById("first");
+      var secondEl = document.getElementById("second");
+      var operatorEl = document.getElementById("operator");
+      var answersEl = document.getElementById("answers");
+      var feedbackEl = document.getElementById("feedback");
+      var clueWrap = document.getElementById("clueWrap");
+      var starsEl = document.getElementById("stars");
+      var coachText = document.getElementById("coachText");
+      var progressText = document.getElementById("progressText");
+      var progressFill = document.getElementById("progressFill");
+      var progressBar = document.querySelector(".progress");
+      var playArea = document.getElementById("playArea");
+      var finish = document.getElementById("finish");
+
+      function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+      function shuffle(list) {
+        for (var i = list.length - 1; i > 0; i--) {
+          var j = rand(0, i), t = list[i]; list[i] = list[j]; list[j] = t;
+        }
+        return list;
+      }
+
+      function pickProblem() {
+        var max = state.solved < 3 ? 30 : (state.solved < 7 ? 50 : 100);
+        var op = state.mode === "mixed" ? (Math.random() < .5 ? "+" : "−") : (state.mode === "plus" ? "+" : "−");
+        var a, b;
+        if (op === "+") {
+          a = rand(5, max - 5);
+          b = rand(2, max - a);
+          state.answer = a + b;
+        } else {
+          a = rand(10, max);
+          b = rand(2, a - 1);
+          state.answer = a - b;
+        }
+        state.first = a; state.second = b; state.op = op;
+      }
+
+      function choicesFor(answer) {
+        var pool = [];
+        var offsets = shuffle([-10, -5, -3, -2, -1, 1, 2, 3, 5, 10]);
+        for (var i = 0; i < offsets.length && pool.length < 3; i++) {
+          var candidate = answer + offsets[i];
+          if (candidate >= 0 && candidate <= 100 && pool.indexOf(candidate) === -1 && candidate !== answer) pool.push(candidate);
+        }
+        while (pool.length < 3) {
+          var fallback = rand(0, 100);
+          if (fallback !== answer && pool.indexOf(fallback) === -1) pool.push(fallback);
+        }
+        return shuffle([answer].concat(pool));
+      }
+
+      function renderProblem() {
+        state.locked = false;
+        state.mistakes = 0;
+        pickProblem();
+        firstEl.textContent = state.first;
+        secondEl.textContent = state.second;
+        operatorEl.textContent = state.op;
+        feedbackEl.textContent = "";
+        feedbackEl.className = "feedback";
+        coachText.textContent = state.solved === 0 ? "À toi de jouer !" : "On continue !";
+        clueWrap.innerHTML = '<button class="clue-button" id="clueButton" type="button">Voir un indice</button>';
+        document.getElementById("clueButton").addEventListener("click", showClue);
+        answersEl.innerHTML = "";
+        choicesFor(state.answer).forEach(function (value, index) {
+          var button = document.createElement("button");
+          button.type = "button";
+          button.className = "answer";
+          button.textContent = value;
+          button.setAttribute("aria-label", "Réponse " + (index + 1) + " : " + value);
+          button.addEventListener("click", function () { chooseAnswer(button, value); });
+          answersEl.appendChild(button);
+        });
+      }
+
+      function chooseAnswer(button, value) {
+        if (state.locked || button.disabled) return;
+        if (value === state.answer) {
+          state.locked = true;
+          button.classList.add("correct");
+          Array.prototype.forEach.call(answersEl.children, function (item) { item.disabled = true; });
+          state.solved += 1;
+          state.stars += 1;
+          starsEl.textContent = state.stars;
+          var message = praise[rand(0, praise.length - 1)];
+          feedbackEl.textContent = message + " " + state.first + " " + state.op + " " + state.second + " = " + state.answer;
+          coachText.textContent = message;
+          updateProgress();
+          if (state.solved === total) {
+            setTimeout(showFinish, 700);
+          } else {
+            setTimeout(renderProblem, 850);
+          }
+        } else {
+          state.mistakes += 1;
+          button.classList.add("wrong");
+          button.disabled = true;
+          feedbackEl.className = "feedback try";
+          feedbackEl.textContent = state.mistakes === 1 ? "Presque ! Essaie encore." : "Courage, regarde l’indice.";
+          coachText.textContent = "Tu peux y arriver !";
+          setTimeout(function () { button.classList.remove("wrong"); }, 400);
+          if (state.mistakes >= 2) showClue();
+        }
+      }
+
+      function showClue() {
+        var tens = Math.floor(state.second / 10) * 10;
+        var units = state.second % 10;
+        var sign = state.op === "+" ? "+" : "−";
+        var action = state.op === "+" ? "ajoute" : "retire";
+        var parts = [];
+        if (tens > 0) parts.push(tens);
+        if (units > 0) parts.push(units);
+        var steps = state.first;
+        var current = state.first;
+        for (var i = 0; i < parts.length; i++) {
+          current = state.op === "+" ? current + parts[i] : current - parts[i];
+          steps += " " + sign + " " + parts[i] + " = " + current;
+        }
+        clueWrap.innerHTML = '<div class="clue">Décompose ' + state.second + ' en dizaines et unités, puis ' + action + ' chaque partie.<span class="strategy-step">' + steps + '</span></div>';
+      }
+
+      function updateProgress() {
+        var percent = state.solved / total * 100;
+        progressText.textContent = state.solved + " / " + total;
+        progressFill.style.width = percent + "%";
+        progressBar.setAttribute("aria-valuenow", state.solved);
+      }
+
+      function showFinish() {
+        playArea.classList.add("hidden");
+        finish.classList.add("visible");
+        document.getElementById("finishText").textContent = "Tu as gagné " + state.stars + " étoiles. Bravo !";
+        makeConfetti();
+        document.getElementById("playAgain").focus();
+      }
+
+      function makeConfetti() {
+        var box = document.getElementById("confetti");
+        var colors = ["#ffc83d", "#ed695f", "#087f79", "#2f70c8", "#2a8c58"];
+        box.innerHTML = "";
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        for (var i = 0; i < 42; i++) {
+          var piece = document.createElement("i");
+          piece.className = "confetti-piece";
+          piece.style.left = rand(3, 97) + "%";
+          piece.style.background = colors[i % colors.length];
+          piece.style.setProperty("--drift", rand(-80, 80) + "px");
+          piece.style.animationDelay = (Math.random() * .5) + "s";
+          box.appendChild(piece);
+        }
+        setTimeout(function () { box.innerHTML = ""; }, 2500);
+      }
+
+      function resetMission() {
+        state.solved = 0; state.stars = 0; state.locked = false;
+        starsEl.textContent = "0";
+        finish.classList.remove("visible");
+        playArea.classList.remove("hidden");
+        updateProgress();
+        renderProblem();
+      }
+
+      Array.prototype.forEach.call(document.querySelectorAll(".mode-button"), function (button) {
+        button.addEventListener("click", function () {
+          state.mode = button.getAttribute("data-mode");
+          Array.prototype.forEach.call(document.querySelectorAll(".mode-button"), function (item) {
+            item.setAttribute("aria-pressed", item === button ? "true" : "false");
+          });
+          resetMission();
+        });
+      });
+
+      document.getElementById("restart").addEventListener("click", resetMission);
+      document.getElementById("playAgain").addEventListener("click", resetMission);
+      document.addEventListener("keydown", function (event) {
+        if (event.key >= "1" && event.key <= "4" && !state.locked && !playArea.classList.contains("hidden")) {
+          var target = answersEl.children[Number(event.key) - 1];
+          if (target && !target.disabled) target.click();
+        }
+      });
+
+      renderProblem();
+    })();
+  </script>
+</body>
+</html>
